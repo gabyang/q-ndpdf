@@ -8,27 +8,25 @@
 }
 
 body {
-  font-family: sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: #f7f7f7;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
 }
 
 .container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 .login-box {
-  background: #ffffff;
-  border-radius: 6px;
-  padding: 30px 40px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   max-width: 400px;
-  width: 100%;
+  margin: 2rem auto;
 }
 
 .login-box h1 {
@@ -43,41 +41,73 @@ body {
 }
 
 .input-group {
-  margin-bottom: 20px;
+  margin-bottom: 1rem;
 }
 
 .input-group label {
   display: block;
-  margin-bottom: 5px;
-  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  color: #333;
 }
 
 .input-group input {
   width: 100%;
-  padding: 10px;
+  padding: 0.5rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
 }
 
 button {
-  width: 100%;
-  padding: 12px;
-  background: #4b8ef7;
-  color: #fff;
-  font-size: 1.1rem;
+  background-color: #007bff;
+  color: white;
   border: none;
+  padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 1rem;
+  width: 100%;
 }
 
 button:hover {
-  background: #3b6ed4;
+  background-color: #0056b3;
 }
 
 .error-message {
-  color: red;
+  color: #dc3545;
+  margin-top: 1rem;
+}
+
+.toggle-link {
   text-align: center;
-  margin-top: 10px;
-  min-height: 20px;
+  margin-top: 1rem;
+}
+
+.toggle-link a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.toggle-link a:hover {
+  text-decoration: underline;
+}
+
+.pdf-viewer {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 2rem auto;
+}
+
+.pdf-controls {
+  margin-bottom: 1rem;
+  text-align: right;
+}
+
+#pdf-frame {
+  width: 100%;
+  height: 80vh;
+  border: none;
+  border-radius: 4px;
 }

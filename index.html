@@ -10,7 +10,8 @@
 </head>
 <body>
   <div class="container">
-    <div class="login-box">
+    <!-- Authentication Section -->
+    <div class="login-box" id="auth-section">
       <h1>Welcome</h1>
       <p>Please log in to access the PDF</p>
       
@@ -59,6 +60,21 @@
       </p>
       
       <p id="error-message" class="error-message"></p>
+    </div>
+
+    <!-- PDF Viewer Section -->
+    <div class="pdf-viewer" id="pdf-section" style="display: none;">
+      <div class="pdf-controls">
+        <button id="logout-button">Log Out</button>
+      </div>
+      <iframe 
+        id="pdf-frame" 
+        title="PDF Viewer"
+        sandbox="allow-same-origin allow-scripts"
+        allow="fullscreen"
+        oncontextmenu="return false"
+        onkeydown="return false"
+      ></iframe>
     </div>
   </div>
   
