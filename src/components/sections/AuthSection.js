@@ -20,11 +20,17 @@ export class AuthSection {
     const loginForm = new Form('login', 'Login', this.loginFields, 'Login');
     authContainer.appendChild(loginForm.render());
 
-    // Add toggle text
+    // Create toggle text
     const toggleText = document.createElement('p');
     toggleText.className = 'toggle-text';
     toggleText.innerHTML = 'Don\'t have an account? <a href="/signup" id="toggle-forms">Sign up</a>';
     authContainer.appendChild(toggleText);
+
+    // Create error message container
+    const errorMessage = document.createElement('div');
+    errorMessage.id = 'error-message';
+    errorMessage.className = 'error-message';
+    authContainer.appendChild(errorMessage);
 
     return authSection;
   }

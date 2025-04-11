@@ -10,26 +10,42 @@ export class Form {
   }
 
   render() {
-    const formContainer = document.createElement('div');
-    formContainer.id = this.id;
-    formContainer.className = 'form-container';
+    const form = document.createElement('form');
+    form.id = `${this.id}-form-element`;
+    form.className = 'form-container';
 
+    // Add title
     const title = document.createElement('h2');
     title.textContent = this.title;
-    formContainer.appendChild(title);
+    form.appendChild(title);
 
-    const form = document.createElement('form');
-    form.id = `${this.id}-element`;
-
+    // Add fields
     this.fields.forEach(field => {
-      const formGroup = new FormGroup(field.id, field.label, field.type);
-      form.appendChild(formGroup.render());
+      const formGroup = document.createElement('div');
+      formGroup.className = 'form-group';
+
+      const label = document.createElement('label');
+      label.htmlFor = field.id;
+      label.textContent = field.label;
+      formGroup.appendChild(label);
+
+      const input = document.createElement('input');
+      input.type = field.type;
+      input.id = field.id;
+      input.name = field.id;
+      input.required = true;
+      formGroup.appendChild(input);
+
+      form.appendChild(formGroup);
     });
 
-    const submitButton = new Button(this.submitText, 'submit');
-    form.appendChild(submitButton.render());
+    // Add submit button
+    const submitButton = document.createElement('button');
+    submitButton.type = 'submit';
+    submitButton.className = 'btn-primary';
+    submitButton.textContent = this.submitText;
+    form.appendChild(submitButton);
 
-    formContainer.appendChild(form);
-    return formContainer;
+    return form;
   }
 } 

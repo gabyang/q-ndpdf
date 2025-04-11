@@ -1,17 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
+import { Popup } from './ui/Popup';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-console.log('Environment variables:', {
-  url: import.meta.env.VITE_SUPABASE_URL,
-  key: import.meta.env.VITE_SUPABASE_ANON_KEY
-});
-
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.error('Missing Supabase environment variables. Please check your .env file.');
-  throw new Error('Missing Supabase environment variables');
-}
 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -20,7 +11,6 @@ export class Auth {
     this.router = router;
     this.loginForm = document.getElementById("login-form-element");
     this.signupForm = document.getElementById("signup-form-element");
-    this.errorMessageEl = document.getElementById("error-message");
     this.verificationForm = document.getElementById("verification-form-element");
     this.verificationCodeInput = document.getElementById("verification-code");
     this.toggleForms = document.getElementById("toggle-forms");
@@ -29,8 +19,12 @@ export class Auth {
     this.closeModal = document.querySelector(".close-modal");
     
     this.userEmail = "";
+    
+    this.popup = new Popup();
     this.setupEventListeners();
     this.setupErrorStyles();
+    this.resendTimer = null;
+    this.canResend = true;
   }
 
   setupErrorStyles() {
@@ -40,12 +34,18 @@ export class Auth {
         border: 2px solid #dc3545 !important;
         background-color: #fff8f8;
       }
-      
-      .error-message {
-        color: #dc3545;
+      .resend-button {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
         margin-top: 10px;
-        text-align: center;
-        font-size: 0.9em;
+      }
+      .resend-button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
       }
     `;
     document.head.appendChild(style);
@@ -66,9 +66,6 @@ export class Auth {
   }
 
   setupEventListeners() {
-    // Clear error messages on page load
-    this.errorMessageEl.textContent = "";
-    
     // Hide verification form initially
     if (this.verificationForm) {
       this.verificationForm.style.display = "none";
@@ -78,8 +75,7 @@ export class Auth {
     if (this.toggleForms) {
       this.toggleForms.addEventListener("click", (event) => {
         event.preventDefault();
-        this.signupModal.style.display = "block";
-        this.errorMessageEl.textContent = "";
+        this.router.navigateTo('/signup');
         this.clearInputErrors();
       });
     }
@@ -88,7 +84,6 @@ export class Auth {
     if (this.closeModal) {
       this.closeModal.addEventListener("click", () => {
         this.signupModal.style.display = "none";
-        this.errorMessageEl.textContent = "";
         this.clearInputErrors();
       });
     }
@@ -97,7 +92,6 @@ export class Auth {
     window.addEventListener("click", (event) => {
       if (event.target === this.signupModal) {
         this.signupModal.style.display = "none";
-        this.errorMessageEl.textContent = "";
         this.clearInputErrors();
       }
     });
@@ -114,17 +108,26 @@ export class Auth {
 
     // Signup form submission
     if (this.signupForm) {
-      this.signupForm.addEventListener("submit", this.handleSignup.bind(this));
+      this.signupForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.handleSignup(e);
+      });
     }
 
     // Login form submission
     if (this.loginForm) {
-      this.loginForm.addEventListener("submit", this.handleLogin.bind(this));
+      this.loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.handleLogin(e);
+      });
     }
 
     // Verification form submission
     if (this.verificationForm) {
-      this.verificationForm.addEventListener("submit", this.handleVerification.bind(this));
+      this.verificationForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.handleVerification(e);
+      });
     }
 
     // Clear errors when user starts typing
@@ -132,9 +135,28 @@ export class Auth {
     inputs.forEach(input => {
       input.addEventListener('input', () => {
         input.classList.remove('input-error');
-        this.errorMessageEl.textContent = '';
       });
     });
+  }
+
+  showError(message) {
+    this.popup.show(message);
+  }
+  
+
+  async hashPassword(password) {
+    // Convert password to ArrayBuffer
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    
+    // Hash the password using SHA-256
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    
+    // Convert the hash to a hex string
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    return hashHex;
   }
 
   async handleSignup(event) {
@@ -145,36 +167,54 @@ export class Auth {
     const password = document.getElementById("signup-password").value;
     const confirmPassword = document.getElementById("confirm-password").value;
     
+    // Validate password length
+    if (password.length < 6) {
+      this.showError("Password must be at least 6 characters long");
+      this.showInputError("signup-password");
+      this.showInputError("confirm-password");
+      return;
+    }
+    
+    // Validate passwords match
     if (password !== confirmPassword) {
-      this.errorMessageEl.textContent = "Passwords do not match";
+      this.showError("Passwords do not match");
       this.showInputError("signup-password");
       this.showInputError("confirm-password");
       return;
     }
 
     try {
-      const { data, error } = await supabaseClient.auth.signUp({
-        email: this.userEmail,
-        password,
-        options: {
-          emailRedirectTo: window.location.origin
-        }
-      });
-      
+      // Hash the password
+      const hashedPassword = await this.hashPassword(password);
+
+      // Insert directly into public.users table
+      const { data, error } = await supabaseClient
+        .from('users')
+        .insert([
+          {
+            email: this.userEmail,
+            encrypted_hash: hashedPassword,
+            created_at: new Date().toISOString()
+          }
+        ])
+        .select();
+
       if (error) {
-        this.errorMessageEl.textContent = error.message;
+        if (error.message.includes('duplicate key')) {
+          this.showError("This email is already registered. Please try logging in instead.");
+        } else {
+          this.showError("Error creating user. Please try again.");
+        }
         this.showInputError("signup-email");
         return;
       }
 
-      // Show verification form and hide signup form
-      document.getElementById("signup-form").style.display = "none";
-      if (this.verificationForm) {
-        this.verificationForm.style.display = "block";
-      }
+      // Show success message and redirect to login page
+      this.popup.show("User registered successfully! Please login.", 'success');
+      this.router.navigateTo('/');
       
     } catch (err) {
-      this.errorMessageEl.textContent = "Something went wrong. Please try again.";
+      this.showError("Error creating user. Please try again.");
       this.showInputError("signup-email");
       console.error(err);
     }
@@ -194,7 +234,7 @@ export class Auth {
       });
       
       if (error) {
-        this.errorMessageEl.textContent = error.message;
+        this.showError("Login failed. Please check your email and password.");
         this.showInputError("email");
         this.showInputError("password");
         return;
@@ -205,7 +245,7 @@ export class Auth {
       document.getElementById('pdf-section').style.display = 'block';
       
     } catch (err) {
-      this.errorMessageEl.textContent = "Something went wrong. Please try again.";
+      this.showError("Login failed. Please try again.");
       this.showInputError("email");
       this.showInputError("password");
       console.error(err);
@@ -226,17 +266,16 @@ export class Auth {
       });
       
       if (error) {
-        this.errorMessageEl.textContent = error.message;
+        this.showError(error.message);
         this.showInputError("verification-code");
         return;
       }
       
-      // If verification is successful, close modal and show PDF viewer
-      this.signupModal.style.display = "none";
+      // If verification is successful, show PDF viewer
       document.getElementById('auth-section').style.display = 'none';
       document.getElementById('pdf-section').style.display = 'block';
     } catch (err) {
-      this.errorMessageEl.textContent = "Verification failed. Please try again.";
+      this.showError("Verification failed. Please try again.");
       this.showInputError("verification-code");
       console.error(err);
     }
@@ -248,12 +287,71 @@ export class Auth {
     document.getElementById('login-form').style.display = 'block';
     document.getElementById('signup-form').style.display = 'none';
     document.getElementById('verification-form').style.display = 'none';
-    this.errorMessageEl.textContent = '';
     this.clearInputErrors();
   }
 
   onLoginSuccess() {
     document.getElementById('auth-section').style.display = 'none';
     document.getElementById('pdf-section').style.display = 'block';
+  }
+
+  async handleLogout() {
+    try {
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) throw error;
+      this.router.navigateTo('/');
+    } catch (error) {
+      this.showError(error.message);
+    }
+  }
+
+  addResendButton() {
+    const verificationForm = document.getElementById("verification-form-element");
+    const existingResendButton = document.getElementById("resend-button");
+    
+    if (!existingResendButton) {
+      const resendButton = document.createElement("button");
+      resendButton.id = "resend-button";
+      resendButton.className = "resend-button";
+      resendButton.textContent = "Resend Code";
+      resendButton.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.handleResendCode();
+      });
+      verificationForm.appendChild(resendButton);
+    }
+  }
+
+  async handleResendCode() {
+    if (!this.canResend) return;
+
+    try {
+      const { error } = await supabaseClient.auth.resend({
+        type: 'signup',
+        email: this.userEmail,
+      });
+
+      if (error) throw error;
+
+      this.canResend = false;
+      const resendButton = document.getElementById("resend-button");
+      resendButton.disabled = true;
+      
+      // Start 30-second timer
+      let secondsLeft = 30;
+      this.resendTimer = setInterval(() => {
+        secondsLeft--;
+        resendButton.textContent = `Resend Code (${secondsLeft}s)`;
+        
+        if (secondsLeft <= 0) {
+          clearInterval(this.resendTimer);
+          this.canResend = true;
+          resendButton.disabled = false;
+          resendButton.textContent = "Resend Code";
+        }
+      }, 1000);
+    } catch (error) {
+      this.showError(error.message);
+    }
   }
 } 
