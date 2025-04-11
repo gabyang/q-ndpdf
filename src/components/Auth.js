@@ -220,6 +220,44 @@ export class Auth {
     }
   }
 
+  generateVerificationCode() {
+    // Generate a 6-digit random code
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  async sendVerificationEmail(email, code) {
+    try {
+      // First store the verification code
+      const { data: codeData, error: codeError } = await supabaseClient
+        .from('verification_codes')
+        .insert([
+          {
+            email: email,
+            code: code,
+            created_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 minutes expiry
+          }
+        ]);
+
+      if (codeError) throw codeError;
+
+      // Send the actual email using Supabase's email service
+      const { data: emailData, error: emailError } = await supabaseClient.functions.invoke('send-verification-email', {
+        body: {
+          email: email,
+          code: code
+        }
+      });
+
+      if (emailError) throw emailError;
+
+      this.popup.show(`Verification code sent to ${email}`, 'success');
+    } catch (err) {
+      console.error('Error sending verification code:', err);
+      this.popup.show('Error sending verification code. Please try again.');
+    }
+  }
+
   async handleLogin(event) {
     event.preventDefault();
     this.clearInputErrors();
@@ -228,21 +266,27 @@ export class Auth {
     const password = document.getElementById("password").value;
     
     try {
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email: this.userEmail,
-        password
-      });
-      
-      if (error) {
+      // Hash the password
+      const hashedPassword = await this.hashPassword(password);
+
+      // Check if user exists and password matches in public.users table
+      const { data, error } = await supabaseClient
+        .from('users')
+        .select('*')
+        .eq('email', this.userEmail)
+        .eq('encrypted_hash', hashedPassword)
+        .single();
+
+      if (error || !data) {
         this.showError("Login failed. Please check your email and password.");
         this.showInputError("email");
         this.showInputError("password");
         return;
       }
 
-      // If login is successful, show the PDF viewer
-      document.getElementById('auth-section').style.display = 'none';
-      document.getElementById('pdf-section').style.display = 'block';
+      // Show success message and navigate to PDF viewer
+      this.popup.show("Login successful!", 'success');
+      this.router.navigateTo('/pdf');
       
     } catch (err) {
       this.showError("Login failed. Please try again.");
@@ -256,23 +300,32 @@ export class Auth {
     event.preventDefault();
     this.clearInputErrors();
     
-    const verificationCode = this.verificationCodeInput.value;
+    const verificationCode = document.getElementById("verification-code").value;
     
     try {
-      const { data, error } = await supabaseClient.auth.verifyOtp({
-        email: this.userEmail,
-        token: verificationCode,
-        type: 'email'
-      });
-      
-      if (error) {
-        this.showError(error.message);
+      // Check if verification code is valid
+      const { data, error } = await supabaseClient
+        .from('verification_codes')
+        .select('*')
+        .eq('email', this.userEmail)
+        .eq('code', verificationCode)
+        .gt('expires_at', new Date().toISOString())
+        .single();
+
+      if (error || !data) {
+        this.showError("Invalid verification code. Please try again.");
         this.showInputError("verification-code");
         return;
       }
+
+      // Delete the used verification code
+      await supabaseClient
+        .from('verification_codes')
+        .delete()
+        .eq('id', data.id);
       
       // If verification is successful, show PDF viewer
-      document.getElementById('auth-section').style.display = 'none';
+      document.getElementById('verification-section').style.display = 'none';
       document.getElementById('pdf-section').style.display = 'block';
     } catch (err) {
       this.showError("Verification failed. Please try again.");
@@ -326,12 +379,9 @@ export class Auth {
     if (!this.canResend) return;
 
     try {
-      const { error } = await supabaseClient.auth.resend({
-        type: 'signup',
-        email: this.userEmail,
-      });
-
-      if (error) throw error;
+      // Generate new verification code
+      const verificationCode = this.generateVerificationCode();
+      await this.sendVerificationEmail(this.userEmail, verificationCode);
 
       this.canResend = false;
       const resendButton = document.getElementById("resend-button");
@@ -350,6 +400,8 @@ export class Auth {
           resendButton.textContent = "Resend Code";
         }
       }, 1000);
+
+      this.popup.show('New verification code sent to your email', 'success');
     } catch (error) {
       this.showError(error.message);
     }

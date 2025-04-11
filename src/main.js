@@ -6,6 +6,7 @@ import { Styles } from './components/ui/Styles';
 import { AuthSection } from './components/sections/AuthSection';
 import { SignupSection } from './components/sections/SignupSection';
 import { PDFSection } from './components/sections/PDFSection';
+import { VerificationSection } from './components/sections/VerificationSection';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -59,6 +60,10 @@ class App {
     // Create signup section
     const signupSection = new SignupSection();
     container.appendChild(signupSection.render());
+
+    // Create verification section
+    const verificationSection = new VerificationSection();
+    container.appendChild(verificationSection.render());
 
     // Create PDF section
     const pdfSection = new PDFSection();

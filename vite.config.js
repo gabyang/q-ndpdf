@@ -6,10 +6,19 @@ export default defineConfig({
     outDir: '../dist',
     emptyOutDir: true,
     rollupOptions: {
-      input: 'main.js'
+      input: './src/main.js'
     }
   },
   server: {
     port: 3000,
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+      port: 3000,
+      overlay: true
+    },
+    watch: {
+      usePolling: true
+    }
   },
 });

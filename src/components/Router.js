@@ -5,6 +5,7 @@ export class Router {
       '/signup': 'signup',
       '/pdf': 'pdf'
     };
+    this.currentRoute = window.location.pathname;
     this.setupEventListeners();
     // Force initial route to auth
     window.history.replaceState({}, '', '/');
@@ -14,7 +15,8 @@ export class Router {
   setupEventListeners() {
     // Handle browser back/forward buttons
     window.addEventListener('popstate', () => {
-      this.handleRouteChange();
+      this.currentRoute = window.location.pathname;
+      this.navigateTo(this.currentRoute);
     });
   }
 
@@ -38,9 +40,27 @@ export class Router {
     }
   }
 
-  navigateTo(path) {
-    // Update browser history without page reload
-    window.history.pushState({}, '', path);
-    this.handleRouteChange();
+  navigateTo(route) {
+    console.log('Navigating to:', route); // Debug log
+    
+    // Hide all sections first
+    document.querySelectorAll('section').forEach(section => {
+      section.style.display = 'none';
+    });
+
+    // Show the appropriate section based on the route
+    const sectionId = this.routes[route];
+    if (sectionId) {
+      const section = document.getElementById(`${sectionId}-section`);
+      if (section) {
+        console.log('Showing section:', sectionId); // Debug log
+        section.style.display = 'block';
+      } else {
+        console.error('Section not found:', sectionId); // Debug log
+      }
+    }
+
+    // Update browser history
+    window.history.pushState({}, '', route);
   }
 } 
