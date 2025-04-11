@@ -6,40 +6,146 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 window.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
+  const signupForm = document.getElementById("signup-form");
   const errorMessageEl = document.getElementById("error-message");
+  const verificationForm = document.getElementById("verification-form");
+  const verificationCodeInput = document.getElementById("verification-code");
+  const toggleForms = document.getElementById("toggle-forms");
   
   // Clear error messages on page load
   errorMessageEl.textContent = "";
   
-  // 3) Form submission logic
-  loginForm.addEventListener("submit", async (event) => {
-    event.preventDefault(); // Prevent form from reloading page
+  // Hide verification form initially
+  if (verificationForm) {
+    verificationForm.style.display = "none";
+  }
 
-    // Grab user input
-    const email = document.getElementById("email").value;
+  // Store email for verification
+  let userEmail = "";
+
+  // Toggle between login and signup forms
+  if (toggleForms) {
+    toggleForms.addEventListener("click", (event) => {
+      event.preventDefault();
+      loginForm.style.display = loginForm.style.display === "none" ? "block" : "none";
+      signupForm.style.display = signupForm.style.display === "none" ? "block" : "none";
+      errorMessageEl.textContent = "";
+    });
+  }
+  
+  // Signup form submission
+  if (signupForm) {
+    signupForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      userEmail = document.getElementById("signup-email").value;
+      const password = document.getElementById("signup-password").value;
+      const confirmPassword = document.getElementById("confirm-password").value;
+      
+      // Validate passwords match
+      if (password !== confirmPassword) {
+        errorMessageEl.textContent = "Passwords do not match";
+        return;
+      }
+
+      try {
+        // Create new user
+        const { data, error } = await supabaseClient.auth.signUp({
+          email: userEmail,
+          password,
+          options: {
+            emailRedirectTo: window.location.origin
+          }
+        });
+        
+        if (error) {
+          errorMessageEl.textContent = error.message;
+          return;
+        }
+
+        // Show verification form
+        signupForm.style.display = "none";
+        if (verificationForm) {
+          verificationForm.style.display = "block";
+        }
+        
+      } catch (err) {
+        errorMessageEl.textContent = "Something went wrong. Please try again.";
+        console.error(err);
+      }
+    });
+  }
+  
+  // Login form submission
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    userEmail = document.getElementById("email").value;
     const password = document.getElementById("password").value;
     
     try {
-      // 4) Attempt sign-in with Supabase
+      // First attempt sign-in with password
       const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email,
+        email: userEmail,
         password
       });
       
-      // 5) Handle errors
       if (error) {
-        // Show the error message from Supabase
         errorMessageEl.textContent = error.message;
         return;
       }
+
+      // If password is correct, send verification code
+      const { error: verificationError } = await supabaseClient.auth.signInWithOtp({
+        email: userEmail,
+        options: {
+          emailRedirectTo: window.location.origin
+        }
+      });
+
+      if (verificationError) {
+        errorMessageEl.textContent = verificationError.message;
+        return;
+      }
+
+      // Show verification form
+      loginForm.style.display = "none";
+      if (verificationForm) {
+        verificationForm.style.display = "block";
+      }
       
-      // 6) If no error, redirect user or show PDF
-      // Example: redirect them to a "pdf.html" page
-      window.location.href = "pdf.html";
     } catch (err) {
-      // Catch any unexpected errors (e.g., network issues)
       errorMessageEl.textContent = "Something went wrong. Please try again.";
       console.error(err);
     }
   });
+
+  // Verification form submission
+  if (verificationForm) {
+    verificationForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      
+      const verificationCode = verificationCodeInput.value;
+      
+      try {
+        // Verify the code
+        const { data, error } = await supabaseClient.auth.verifyOtp({
+          email: userEmail,
+          token: verificationCode,
+          type: 'email'
+        });
+        
+        if (error) {
+          errorMessageEl.textContent = error.message;
+          return;
+        }
+        
+        // If verification successful, redirect to PDF page
+        window.location.href = "pdf.html";
+      } catch (err) {
+        errorMessageEl.textContent = "Verification failed. Please try again.";
+        console.error(err);
+      }
+    });
+  }
 });
