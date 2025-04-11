@@ -5,6 +5,9 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
+    rollupOptions: {
+      input: 'main.js'
+    }
   },
   server: {
     port: 3000,

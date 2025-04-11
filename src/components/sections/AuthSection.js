@@ -6,20 +6,10 @@ export class AuthSection {
       { id: 'email', label: 'Email', type: 'email' },
       { id: 'password', label: 'Password', type: 'password' }
     ];
-
-    this.signupFields = [
-      { id: 'signup-email', label: 'Email', type: 'email' },
-      { id: 'signup-password', label: 'Password', type: 'password' },
-      { id: 'confirm-password', label: 'Confirm Password', type: 'password' }
-    ];
-
-    this.verificationFields = [
-      { id: 'verification-code', label: 'Verification Code', type: 'text' }
-    ];
   }
 
   render() {
-    const authSection = document.createElement('div');
+    const authSection = document.createElement('section');
     authSection.id = 'auth-section';
 
     const authContainer = document.createElement('div');
@@ -33,24 +23,8 @@ export class AuthSection {
     // Add toggle text
     const toggleText = document.createElement('p');
     toggleText.className = 'toggle-text';
-    toggleText.innerHTML = 'Don\'t have an account? <a href="#" id="toggle-forms">Sign up</a>';
+    toggleText.innerHTML = 'Don\'t have an account? <a href="/signup" id="toggle-forms">Sign up</a>';
     authContainer.appendChild(toggleText);
-
-    // Create signup form
-    const signupForm = new Form('signup', 'Sign Up', this.signupFields, 'Sign Up');
-    signupForm.render().style.display = 'none';
-    authContainer.appendChild(signupForm.render());
-
-    // Create verification form
-    const verificationForm = new Form('verification', 'Verify Email', this.verificationFields, 'Verify');
-    verificationForm.render().style.display = 'none';
-    authContainer.appendChild(verificationForm.render());
-
-    // Create error message container
-    const errorMessage = document.createElement('div');
-    errorMessage.id = 'error-message';
-    errorMessage.className = 'error-message';
-    authContainer.appendChild(errorMessage);
 
     return authSection;
   }

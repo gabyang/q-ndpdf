@@ -97,15 +97,27 @@ export class Styles {
         text-decoration: underline;
       }
 
+      .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #007bff;
+        text-decoration: none;
+        font-size: 0.9em;
+      }
+
+      .back-link:hover {
+        text-decoration: underline;
+      }
+
       .pdf-container {
         width: 100%;
         height: 100vh;
         position: relative;
       }
 
-      #pdf-frame {
+      #pdf-viewer {
         width: 100%;
-        height: 100%;
+        height: calc(100vh - 60px);
         border: none;
       }
     `;

@@ -4,44 +4,70 @@ import { PDFViewer } from './components/PDFViewer';
 import { Router } from './components/Router';
 import { Styles } from './components/ui/Styles';
 import { AuthSection } from './components/sections/AuthSection';
+import { SignupSection } from './components/sections/SignupSection';
 import { PDFSection } from './components/sections/PDFSection';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.error('Missing Supabase environment variables. Please check your .env file.');
+  throw new Error('Missing Supabase environment variables');
+}
 
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 class App {
   constructor() {
-    this.initializeApp();
-  }
-
-  initializeApp() {
+    // Create app container first
+    this.createAppContainer();
+    
     // Inject styles
     Styles.inject();
+    
+    // Initialize router
+    this.router = new Router();
+    
+    // Create UI components
+    this.createUI();
+    
+    // Initialize components
+    this.auth = new Auth(this.router);
+    this.pdfViewer = new PDFViewer();
+    
+    // Check initial session
+    this.checkSession();
+  }
 
-    // Create main container
+  createAppContainer() {
+    // Create app container
     const appContainer = document.createElement('div');
     appContainer.id = 'app';
     document.body.appendChild(appContainer);
+  }
 
-    // Create and append sections
+  createUI() {
+    // Create main container
+    const container = document.createElement('div');
+    container.id = 'app-container';
+    document.getElementById('app').appendChild(container);
+
+    // Create auth section
     const authSection = new AuthSection();
+    container.appendChild(authSection.render());
+
+    // Create signup section
+    const signupSection = new SignupSection();
+    container.appendChild(signupSection.render());
+
+    // Create PDF section
     const pdfSection = new PDFSection();
-    appContainer.appendChild(authSection.render());
-    appContainer.appendChild(pdfSection.render());
-
-    // Initialize router and components
-    this.router = new Router();
-    this.auth = new Auth(this.router);
-    this.pdfViewer = new PDFViewer();
-
-    // Check session
-    this.checkSession();
+    container.appendChild(pdfSection.render());
   }
 
   async checkSession() {
     const { data: { session } } = await supabaseClient.auth.getSession();
+    
     if (session) {
       this.router.navigateTo('/pdf');
     } else {
@@ -50,7 +76,5 @@ class App {
   }
 }
 
-// Initialize the app when the DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  new App();
-}); 
+// Initialize the app immediately
+new App(); 

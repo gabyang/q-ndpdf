@@ -2,40 +2,44 @@ export class Router {
   constructor() {
     this.routes = {
       '/': 'auth',
+      '/signup': 'signup',
       '/pdf': 'pdf'
     };
-    this.currentView = null;
     this.setupEventListeners();
+    // Force initial route to auth
+    window.history.replaceState({}, '', '/');
+    this.handleRouteChange();
   }
 
   setupEventListeners() {
     // Handle browser back/forward buttons
-    window.addEventListener('popstate', this.handleRouteChange.bind(this));
-    
-    // Handle initial load
-    this.handleRouteChange();
+    window.addEventListener('popstate', () => {
+      this.handleRouteChange();
+    });
   }
 
   handleRouteChange() {
     const path = window.location.pathname;
-    const view = this.routes[path] || 'auth';
-    
-    if (this.currentView !== view) {
-      this.currentView = view;
-      this.updateView(view);
+    this.updateView(path);
+  }
+
+  updateView(path) {
+    // Hide all sections first
+    const sections = document.querySelectorAll('section');
+    sections.forEach(section => {
+      section.style.display = 'none';
+    });
+
+    // Show the appropriate section based on the route
+    const view = this.routes[path] || 'auth'; // Default to auth if route not found
+    const section = document.getElementById(`${view}-section`);
+    if (section) {
+      section.style.display = 'block';
     }
   }
 
-  updateView(view) {
-    // Hide all sections
-    document.getElementById('auth-section').style.display = 'none';
-    document.getElementById('pdf-section').style.display = 'none';
-
-    // Show the current view
-    document.getElementById(`${view}-section`).style.display = 'block';
-  }
-
   navigateTo(path) {
+    // Update browser history without page reload
     window.history.pushState({}, '', path);
     this.handleRouteChange();
   }
