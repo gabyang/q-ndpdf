@@ -14,6 +14,7 @@
       <h1>Welcome</h1>
       <p>Please log in to access the PDF</p>
       
+      <!-- Login Form -->
       <form id="login-form">
         <div class="input-group">
           <label for="email">Email</label>
@@ -25,6 +26,38 @@
         </div>
         <button id="login-button" type="submit">Log In</button>
       </form>
+
+      <!-- Signup Form -->
+      <form id="signup-form" style="display: none;">
+        <div class="input-group">
+          <label for="signup-email">Email</label>
+          <input id="signup-email" type="email" required />
+        </div>
+        <div class="input-group">
+          <label for="signup-password">Password</label>
+          <input id="signup-password" type="password" required />
+        </div>
+        <div class="input-group">
+          <label for="confirm-password">Confirm Password</label>
+          <input id="confirm-password" type="password" required />
+        </div>
+        <button id="signup-button" type="submit">Sign Up</button>
+      </form>
+
+      <!-- Verification Form -->
+      <form id="verification-form" style="display: none;">
+        <div class="input-group">
+          <label for="verification-code">Verification Code</label>
+          <input id="verification-code" type="text" required />
+        </div>
+        <button id="verify-button" type="submit">Verify</button>
+      </form>
+
+      <!-- Toggle Link -->
+      <p class="toggle-link">
+        <a href="#" id="toggle-forms">Don't have an account? Sign up</a>
+      </p>
+      
       <p id="error-message" class="error-message"></p>
     </div>
   </div>
