@@ -3,7 +3,7 @@ export class PDFSection {
     this.pdfUrl = import.meta.env.VITE_PDF_URL;
     this.currentPage = 1;
     this.pdfDoc = null;
-    this.scale = 1.5;
+    this.scale = 0.1;
     this.controls = null;
     this.isRendering = false;
     this.zoomLevel = 1.0;

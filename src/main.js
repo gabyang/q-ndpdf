@@ -20,9 +20,6 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 class App {
   constructor() {
-    // Create app container first
-    this.createAppContainer();
-    
     // Inject styles
     Styles.inject();
     
@@ -38,13 +35,6 @@ class App {
     
     // Check initial session
     this.checkSession();
-  }
-
-  createAppContainer() {
-    // Create app container
-    const appContainer = document.createElement('div');
-    appContainer.id = 'app';
-    document.body.appendChild(appContainer);
   }
 
   createUI() {
@@ -81,5 +71,5 @@ class App {
   }
 }
 
-// Initialize the app immediately
+// Initialize the app
 new App(); 

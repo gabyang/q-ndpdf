@@ -6,8 +6,9 @@ export default defineConfig({
     outDir: '../dist',
     emptyOutDir: true,
     rollupOptions: {
-      input: './src/main.js'
-    }
+      input: './src/index.html'
+    },
+    assetsInclude: ['**/*.css']
   },
   server: {
     port: 3000,
