@@ -28,22 +28,28 @@
         <button id="login-button" type="submit">Log In</button>
       </form>
 
-      <!-- Signup Form -->
-      <form id="signup-form" style="display: none;">
-        <div class="input-group">
-          <label for="signup-email">Email</label>
-          <input id="signup-email" type="email" required />
+      <!-- Signup Modal -->
+      <div id="signup-modal" class="modal">
+        <div class="modal-content">
+          <span class="close-modal">&times;</span>
+          <h2>Create Account</h2>
+          <form id="signup-form">
+            <div class="input-group">
+              <label for="signup-email">Email</label>
+              <input id="signup-email" type="email" required />
+            </div>
+            <div class="input-group">
+              <label for="signup-password">Password</label>
+              <input id="signup-password" type="password" required />
+            </div>
+            <div class="input-group">
+              <label for="confirm-password">Confirm Password</label>
+              <input id="confirm-password" type="password" required />
+            </div>
+            <button id="signup-button" type="submit">Sign Up</button>
+          </form>
         </div>
-        <div class="input-group">
-          <label for="signup-password">Password</label>
-          <input id="signup-password" type="password" required />
-        </div>
-        <div class="input-group">
-          <label for="confirm-password">Confirm Password</label>
-          <input id="confirm-password" type="password" required />
-        </div>
-        <button id="signup-button" type="submit">Sign Up</button>
-      </form>
+      </div>
 
       <!-- Verification Form -->
       <form id="verification-form" style="display: none;">

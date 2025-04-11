@@ -85,8 +85,18 @@ function showLoginForm() {
   document.getElementById('auth-section').style.display = 'block';
   document.getElementById('pdf-section').style.display = 'none';
   document.getElementById('login-form').style.display = 'block';
-  document.getElementById('signup-form').style.display = 'none';
   document.getElementById('verification-form').style.display = 'none';
+  document.getElementById('error-message').textContent = '';
+}
+
+// Function to show signup form
+function showSignupForm() {
+  document.getElementById('auth-section').style.display = 'block';
+  document.getElementById('pdf-section').style.display = 'none';
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('signup-form').style.display = 'block';
+  document.getElementById('verification-form').style.display = 'none';
+  document.getElementById('error-message').textContent = '';
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -97,6 +107,8 @@ window.addEventListener("DOMContentLoaded", () => {
   const verificationCodeInput = document.getElementById("verification-code");
   const toggleForms = document.getElementById("toggle-forms");
   const logoutButton = document.getElementById("logout-button");
+  const signupModal = document.getElementById("signup-modal");
+  const closeModal = document.querySelector(".close-modal");
   
   // Clear error messages on page load
   errorMessageEl.textContent = "";
@@ -113,11 +125,23 @@ window.addEventListener("DOMContentLoaded", () => {
   if (toggleForms) {
     toggleForms.addEventListener("click", (event) => {
       event.preventDefault();
-      loginForm.style.display = loginForm.style.display === "none" ? "block" : "none";
-      signupForm.style.display = signupForm.style.display === "none" ? "block" : "none";
-      errorMessageEl.textContent = "";
+      signupModal.style.display = "block";
     });
   }
+
+  // Close modal when clicking the X
+  if (closeModal) {
+    closeModal.addEventListener("click", () => {
+      signupModal.style.display = "none";
+    });
+  }
+
+  // Close modal when clicking outside
+  window.addEventListener("click", (event) => {
+    if (event.target === signupModal) {
+      signupModal.style.display = "none";
+    }
+  });
 
   // Logout functionality
   if (logoutButton) {
@@ -159,10 +183,11 @@ window.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        // Show verification form
-        signupForm.style.display = "none";
+        // Close the modal and show verification form
+        signupModal.style.display = "none";
         if (verificationForm) {
           verificationForm.style.display = "block";
+          loginForm.style.display = "none";
         }
         
       } catch (err) {
