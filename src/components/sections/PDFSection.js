@@ -45,32 +45,56 @@ export class PDFSection {
     zoomOutButton.textContent = '-';
     zoomOutButton.style.padding = '5px 10px';
     zoomOutButton.style.fontSize = '16px';
+    zoomOutButton.style.width = '40px';
+    zoomOutButton.style.height = '30px';
+    zoomOutButton.style.minWidth = '40px';
+    zoomOutButton.style.minHeight = '30px';
     zoomOutButton.onclick = () => this.zoomOut();
 
     const zoomInButton = document.createElement('button');
     zoomInButton.textContent = '+';
     zoomInButton.style.padding = '5px 10px';
     zoomInButton.style.fontSize = '16px';
+    zoomInButton.style.width = '40px';
+    zoomInButton.style.height = '30px';
+    zoomInButton.style.minWidth = '40px';
+    zoomInButton.style.minHeight = '30px';
     zoomInButton.onclick = () => this.zoomIn();
 
     const zoomLevel = document.createElement('span');
     zoomLevel.textContent = `${Math.round(this.zoomLevel * 100)}%`;
-    zoomLevel.style.minWidth = '50px';
+    zoomLevel.style.minWidth = '60px';
     zoomLevel.style.textAlign = 'center';
+    zoomLevel.style.fontSize = '14px';
 
     // Create page navigation buttons
     const prevButton = document.createElement('button');
     prevButton.textContent = 'Previous';
+    prevButton.style.padding = '5px 15px';
+    prevButton.style.fontSize = '14px';
+    prevButton.style.width = '100px';
+    prevButton.style.height = '30px';
+    prevButton.style.minWidth = '100px';
+    prevButton.style.minHeight = '30px';
     prevButton.onclick = () => this.showPage(this.currentPage - 1);
     prevButton.disabled = true;
 
     const nextButton = document.createElement('button');
     nextButton.textContent = 'Next';
+    nextButton.style.padding = '5px 15px';
+    nextButton.style.fontSize = '14px';
+    nextButton.style.width = '100px';
+    nextButton.style.height = '30px';
+    nextButton.style.minWidth = '100px';
+    nextButton.style.minHeight = '30px';
     nextButton.onclick = () => this.showPage(this.currentPage + 1);
 
     const pageInfo = document.createElement('span');
     pageInfo.id = 'page-info';
     pageInfo.textContent = 'Page 1 of 1';
+    pageInfo.style.minWidth = '100px';
+    pageInfo.style.textAlign = 'center';
+    pageInfo.style.fontSize = '14px';
 
     // Add controls to container
     this.controls.appendChild(zoomOutButton);
