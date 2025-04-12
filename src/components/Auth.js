@@ -75,7 +75,7 @@ export class Auth {
     if (this.toggleForms) {
       this.toggleForms.addEventListener("click", (event) => {
         event.preventDefault();
-        this.router.navigateTo('/signup');
+        this.router.navigateTo('/q-ndpdf/signup');
         this.clearInputErrors();
       });
     }
@@ -101,7 +101,7 @@ export class Auth {
       this.logoutButton.addEventListener("click", async () => {
         const { error } = await supabaseClient.auth.signOut();
         if (!error) {
-          this.router.navigateTo('/');
+          this.router.navigateTo('/q-ndpdf');
         }
       });
     }
@@ -211,7 +211,7 @@ export class Auth {
 
       // Show success message and redirect to login page
       this.popup.show("User registered successfully! Please login.", 'success');
-      this.router.navigateTo('/');
+      this.router.navigateTo('/q-ndpdf');
       
     } catch (err) {
       this.showError("Error creating user. Please try again.");
@@ -286,7 +286,7 @@ export class Auth {
 
       // Show success message and navigate to PDF viewer
       this.popup.show("Login successful!", 'success');
-      this.router.navigateTo('/pdf');
+      this.router.navigateTo('/q-ndpdf/pdf');
       
     } catch (err) {
       this.showError("Login failed. Please try again.");
@@ -352,7 +352,7 @@ export class Auth {
     try {
       const { error } = await supabaseClient.auth.signOut();
       if (error) throw error;
-      this.router.navigateTo('/');
+      this.router.navigateTo('/q-ndpdf');
     } catch (error) {
       this.showError(error.message);
     }

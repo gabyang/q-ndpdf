@@ -1,9 +1,9 @@
 export class Router {
   constructor() {
     this.routes = {
-      '/': 'auth',
-      '/signup': 'signup',
-      '/pdf': 'pdf'
+      '/q-ndpdf': 'auth',
+      '/q-ndpdf/signup': 'signup',
+      '/q-ndpdf/pdf': 'pdf'
     };
     this.currentRoute = window.location.pathname;
     this.setupEventListeners();

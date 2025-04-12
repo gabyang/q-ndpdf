@@ -64,9 +64,9 @@ class App {
     const { data: { session } } = await supabaseClient.auth.getSession();
     
     if (session) {
-      this.router.navigateTo('/pdf');
+      this.router.navigateTo('/q-ndpdf/pdf');
     } else {
-      this.router.navigateTo('/');
+      this.router.navigateTo('/q-ndpdf');
     }
   }
 }

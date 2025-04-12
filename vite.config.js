@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  base: '/q-ndpdf/',
   root: 'src',
   build: {
     outDir: '../dist',
